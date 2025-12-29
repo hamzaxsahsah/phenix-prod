@@ -23,7 +23,8 @@ app.use(cors({
     // allow all
     if (allowedList.length === 1 && allowedList[0] === '*') return callback(null, true);
     if (allowedList.includes(origin)) return callback(null, true);
-    return callback(new Error('Not allowed by CORS'));
+    // Do not throw an error for disallowed origins; respond without CORS headers
+    return callback(null, false);
   }
 }));
 
