@@ -10,8 +10,8 @@ if [[ "$EUID" -ne 0 ]]; then
 fi
 
 read -p "Git repo URL (leave empty if repo already on server): " REPO_URL
-read -p "Deploy path [/opt/pheonixCRM]: " DEPLOY_DIR
-DEPLOY_DIR=${DEPLOY_DIR:-/opt/pheonixCRM}
+read -p "Deploy path [/opt/pheonix]: " DEPLOY_DIR
+DEPLOY_DIR=${DEPLOY_DIR:-/opt/pheonix}
 read -p "Domain (optional; used for FRONTEND_URL / Certbot): " DOMAIN
 read -p "Postgres password (will be set in docker compose): " PG_PASS
 read -p "JWT secret (will be set in backend .env): " JWT_SECRET

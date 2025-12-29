@@ -9,10 +9,10 @@
    usermod -aG sudo deployer
 
 3. Review the script content before running. (Important for security.)
-   cat /opt/pheonixCRM/deploy/setup-deploy.sh
+   cat /opt/pheonix/deploy/setup-deploy.sh
 
 4. Run the script as root (it will prompt for values):
-   sudo bash /opt/pheonixCRM/deploy/setup-deploy.sh
+   sudo bash /opt/pheonix/deploy/setup-deploy.sh
 
 5. After the script finishes:
    - Visit http://72.62.31.157 to check the frontend.

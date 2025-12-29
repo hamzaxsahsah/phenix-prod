@@ -5,10 +5,10 @@ After=docker.service
 
 [Service]
 Type=oneshot
-WorkingDirectory=/opt/pheonixCRM
+WorkingDirectory=/opt/pheonix
 RemainAfterExit=yes
-ExecStart=/usr/bin/docker compose -f /opt/pheonixCRM/docker-compose.prod.yml up -d --build
-ExecStop=/usr/bin/docker compose -f /opt/pheonixCRM/docker-compose.prod.yml down
+ExecStart=/usr/bin/docker compose -f /opt/pheonix/docker-compose.prod.yml up -d --build
+ExecStop=/usr/bin/docker compose -f /opt/pheonix/docker-compose.prod.yml down
 TimeoutStartSec=0
 
 [Install]
