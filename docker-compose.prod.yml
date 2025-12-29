@@ -1,0 +1,38 @@
+version: "3.8"
+services:
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: StrongPassHere
+      POSTGRES_DB: appdb
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://postgres:StrongPassHere@db:5432/appdb
+      JWT_SECRET: ${JWT_SECRET:-very-strong-default}
+      PORT: 3000
+      FRONTEND_URL: ${FRONTEND_URL:-https://yourdomain.com}
+    ports:
+      - "127.0.0.1:3000:3000"   # bind to localhost only
+    depends_on:
+      - db
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:80"     # bind to localhost only
+
+volumes:
+  db-data:

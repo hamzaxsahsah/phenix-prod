@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  DELIVERY_MAN
+  SUPER_ADMIN
+}
+
+enum DeliveryState {
+  AJOUTE
+  ANNULE
+  ANNULE_PAS_INTERESSE
+  ANNULE_SUIVI
+  CHANGE
+  CHANGEMENT_CLIENT
+  CHANGEMENT_NUMERO
+  DEMANDE_DE_RETOUR
+  EXPEDIE
+  HORS_ZONE
+  INJOIGNABLE
+  INJOIGNABLE_SUIVI
+  INTERESSE
+  LIVRE
+  MANQUE_DE_STOCK
+  MISE_EN_DISTRIBUTION
+  NUMERO_ERRONE
+  NUMERO_INCORRECT
+  PAS_DE_REPONSE
+  PAS_DE_REPONSE_SUIVI
+  PAS_DE_REPONSE_2
+  PAS_DE_REPONSE_3
+  PAS_DE_REPONSE_4
+  PAS_DE_REPONSE_5
+  PAS_DE_REPONSE_LV
+  PRET_POUR_EXPEDITION
+  PROGRAMME
+  RAMASSE
+  RECU_PAR_LIVREUR
+  REFUSE
+  REPORTE
+  REPORTE_SUIVI
+  RETOUR_CLIENT_RECU
+  RETOUR_RECU_AGENCE_CASA
+  RETOURNE
+  RETOURNE_VERS_AGENCE
+}
+
+model User {
+  id                Int        @id @default(autoincrement())
+  email             String     @unique
+  passwordHash      String
+  role              Role       @default(USER)
+  assignedDeliveries Delivery[] @relation("AssignedDeliveries")
+  createdDeliveries  Delivery[] @relation("CreatedDeliveries")
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+}
+
+model Delivery {
+  id           Int            @id @default(autoincrement())
+  clientName   String
+  serialNumber String?
+  product      String
+  price        Float?
+  address      String
+  phoneNumber  String
+  state        DeliveryState  @default(AJOUTE)
+
+  assignedToId Int?
+  assignedTo   User?          @relation("AssignedDeliveries", fields: [assignedToId], references: [id])
+
+  createdById  Int?
+  createdBy    User?          @relation("CreatedDeliveries", fields: [createdById], references: [id])
+
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}

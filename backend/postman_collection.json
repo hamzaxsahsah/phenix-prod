@@ -1,0 +1,242 @@
+{
+  "info": {
+    "name": "Pheonix Backend API",
+    "_postman_id": "pheonix-backend-collection",
+    "description": "Collection for testing Pheonix backend (Auth, Deliverymen, Deliveries)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/health"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('returns ok', function () { var body = pm.response.json(); pm.expect(body.status).to.eql('ok'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Register user (creates a USER)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/auth/register",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{uniqueEmail}}\",\n  \"password\": \"pass123\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// generate a unique email for this run",
+              "pm.environment.set('uniqueEmail', 'test+' + Date.now() + '@example.com');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
+              "var body = pm.response.json();",
+              "pm.test('response has id and email', function () { pm.expect(body).to.have.property('id'); pm.expect(body).to.have.property('email'); });",
+              "pm.environment.set('userId', body.id);",
+              "pm.environment.set('testUserEmail', body.email);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login user (get JWT)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{testUserEmail}}\",\n  \"password\": \"pass123\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "var body = pm.response.json();",
+              "pm.test('token exists', function () { pm.expect(body).to.have.property('token'); });",
+              "pm.environment.set('jwt', body.token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create deliveryman",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/deliverymen",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"dm+{{uniqueEmail}}\",\n  \"password\": \"pass123\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
+              "var body = pm.response.json();",
+              "pm.test('returns id and role', function () { pm.expect(body).to.have.property('id'); pm.expect(body).to.have.property('role'); });",
+              "pm.environment.set('deliverymanId', body.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create delivery",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/deliveries",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"clientName\": \"Client Example\",\n  \"product\": \"Product X\",\n  \"serialNumber\": \"S-12345\",\n  \"price\": 49.99,\n  \"address\": \"123 rue Exemple, Casa\",\n  \"phoneNumber\": \"+212600000001\",\n  \"state\": \"AJOUTE\",\n  \"assignedToId\": {{deliverymanId}},\n  \"createdById\": {{userId}}\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
+              "var body = pm.response.json();",
+              "pm.test('delivery has id and product', function () { pm.expect(body).to.have.property('id'); pm.expect(body.product).to.eql('Product X'); });",
+              "pm.environment.set('deliveryId', body.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "List deliveries",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/deliveries"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+              "var body = pm.response.json();",
+              "pm.test('returns array', function () { pm.expect(Array.isArray(body)).to.be.true; });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get delivery by id",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/deliveries/{{deliveryId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+              "var body = pm.response.json();",
+              "pm.test('delivery id matches', function () { pm.expect(body.id).to.eql(parseInt(pm.environment.get('deliveryId'))); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Update delivery (set state to LIVRE)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/deliveries/{{deliveryId}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"state\": \"LIVRE\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+              "var body = pm.response.json();",
+              "pm.test('state is LIVRE', function () { pm.expect(body.state).to.eql('LIVRE'); });"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "// nothing global for now"
+        ]
+      }
+    }
+  ]
+}
